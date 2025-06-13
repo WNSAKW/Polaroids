@@ -247,7 +247,7 @@ class PolaroidText {
 }
 
 function preload() {
-  bg = loadImage("canvas.png");
+	bg = loadImage("canvas.png");
 	signImg = loadImage("sign.png");
 }
 
