@@ -1,1 +1,1 @@
-# New Folder for Generated images
+New Folder for Generated images
