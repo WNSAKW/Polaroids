@@ -15,7 +15,6 @@ let selectedFilter;
 let signImg;
 let pg; // Graphics buffer for the drawing area
 let polaroidText; // PolaroidText instance
-//let saveCount = 0; // Counter for unique save filenames
 
 // Brush class definition
 class Brush {
@@ -123,13 +122,13 @@ class Filter {
   static getAllFilters() {
     return [
       new Filter("None", null),
-      new Filter("Blur3", BLUR, 3), //模糊3
-      new Filter("Blur6", BLUR, 6), //模糊6
-      new Filter("Grayscale", GRAY), //灰階
-      new Filter("Invert", INVERT), //顏色反轉
-			new Filter("Posterize2", POSTERIZE, 2), //色調分離2
-      new Filter("Posterize4", POSTERIZE, 4), //色調分離4
-      new Filter("Threshold", THRESHOLD) //黑白
+      new Filter("Blur3", BLUR, 3),
+      new Filter("Blur6", BLUR, 6),
+      new Filter("Grayscale", GRAY),
+      new Filter("Invert", INVERT),
+      new Filter("Posterize2", POSTERIZE, 2),
+      new Filter("Posterize4", POSTERIZE, 4),
+      new Filter("Threshold", THRESHOLD)
     ];
   }
 }
@@ -144,75 +143,68 @@ class RainEffect {
     this.droplets = [];
     this.streaks = [];
     this.drawn = false;
-    this.noiseSeed = random(1000); // Unique noise seed for consistent randomness
+    this.noiseSeed = random(1000);
     this.generateDroplets();
     this.generateStreaks();
   }
 
-  // Generate random water droplets, some clustered
   generateDroplets() {
     for (let i = 0; i < this.numDroplets; i++) {
       let x = random(0, this.photoW);
       let y = random(0, this.photoH);
-      let size = random(2, 10); // Varied droplet sizes
-      let isClustered = random() > 0.6; // 40% chance to cluster
+      let size = random(2, 10);
+      let isClustered = random() > 0.6;
       let clusterOffsetX = isClustered ? random(-12, 12) : 0;
       let clusterOffsetY = isClustered ? random(-12, 12) : 0;
-      let opacity = random(60, 140); // Slightly higher opacity for visibility
+      let opacity = random(60, 140);
       this.droplets.push({ x: x + clusterOffsetX, y: y + clusterOffsetY, size, opacity });
     }
   }
 
-  // Generate random rain streaks
   generateStreaks() {
     for (let i = 0; i < this.numStreaks; i++) {
       let x = random(0, this.photoW);
-      let yStart = random(-this.photoH * 0.2, this.photoH * 0.2); // Start higher
-      let length = random(this.photoH * 0.4, this.photoH * 0.8); // Longer trails
-      let angle = random(-PI / 8, PI / 8); // Slight tilt for natural flow
-      let thickness = random(0.5, 1.8); // Thin, liquid-like streaks
-      let baseOpacity = random(80, 150); // Stronger presence
+      let yStart = random(-this.photoH * 0.2, this.photoH * 0.2);
+      let length = random(this.photoH * 0.4, this.photoH * 0.8);
+      let angle = random(-PI / 8, PI / 8);
+      let thickness = random(0.5, 1.8);
+      let baseOpacity = random(80, 150);
       this.streaks.push({ x, yStart, length, angle, thickness, baseOpacity, noiseOffset: random(1000) });
     }
   }
 
-  // Draw droplets and streaks on the graphics buffer
   draw(pg) {
     pg.push();
-    noiseSeed(this.noiseSeed); // Set consistent noise seed
+    noiseSeed(this.noiseSeed);
 
-    // Draw droplets
     for (let droplet of this.droplets) {
-      pg.fill(210, 230, 255, droplet.opacity); // Bluish, glass-like color
+      pg.fill(210, 230, 255, droplet.opacity);
       pg.noStroke();
-      pg.ellipse(droplet.x, droplet.y, droplet.size, droplet.size * 1.2); // Slightly oval
+      pg.ellipse(droplet.x, droplet.y, droplet.size, droplet.size * 1.2);
     }
 
-    // Draw streaks
     pg.noFill();
     for (let streak of this.streaks) {
       pg.beginShape();
-      let steps = 20; // More points for smoother, winding paths
+      let steps = 20;
       for (let i = 0; i <= steps; i++) {
         let t = i / steps;
         let y = streak.yStart + t * streak.length;
-        // Winding path inspired by reference code's Perlin noise
-        let offsetX = noise(streak.noiseOffset + y * 0.02) * 20 - 10; // Larger amplitude for curves
+        let offsetX = noise(streak.noiseOffset + y * 0.02) * 20 - 10;
         let x = streak.x + cos(streak.angle) * t * streak.length + offsetX;
-        let opacity = streak.baseOpacity * (1 - t * 0.7); // Gradual fade
-        let thickness = streak.thickness * (1 - t * 0.6); // Pronounced tapering
-        pg.stroke(210, 230, 255, opacity); // Bluish, liquid-like
+        let opacity = streak.baseOpacity * (1 - t * 0.7);
+        let thickness = streak.thickness * (1 - t * 0.6);
+        pg.stroke(210, 230, 255, opacity);
         pg.strokeWeight(thickness);
         pg.vertex(x, y);
       }
       pg.endShape();
 
-      // Add droplet at streak end
       let endX = streak.x + cos(streak.angle) * streak.length;
       let endY = streak.yStart + streak.length;
       pg.fill(210, 230, 255, streak.baseOpacity * 0.9);
       pg.noStroke();
-      pg.ellipse(endX, endY, 5, 6); // Slightly larger droplet
+      pg.ellipse(endX, endY, 5, 6);
     }
 
     pg.pop();
@@ -227,7 +219,6 @@ class PolaroidText {
     this.monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   }
 
-  // Get formatted date and time string
   getDateTime() {
     let currentMonth = this.monthNames[month() - 1];
     let currentDay = nf(day(), 2);
@@ -237,7 +228,6 @@ class PolaroidText {
     return `${currentMonth}.${currentDay},${currentYear} ${currentHours}:${currentMinutes}`;
   }
 
-  // Display text on canvas
   display() {
     fill(80);
     textSize(16);
@@ -249,38 +239,31 @@ class PolaroidText {
 
 function preload() {
   bg = loadImage("canvas.png");
-	signImg = loadImage("sign.png");
+  signImg = loadImage("sign.png");
 }
 
 function setup() {
   createCanvas(canvasW, canvasH);
-  reset(); // Initialize everything
+  reset();
 }
 
 function reset() {
-  pg = createGraphics(photoW, photoH); // Recreate graphics buffer
+  pg = createGraphics(photoW, photoH);
 
-  // Initialize themes and filters
   themes = Theme.getAllThemes();
   filters = Filter.getAllFilters();
 
-  // Draw background
   image(bg, 0, 0, width, height);
 
-  // Select random theme and filter
   theme = random(themes);
   selectedFilter = random(filters);
 
-  // Initialize PolaroidText
   polaroidText = new PolaroidText(theme.name, selectedFilter.name);
 
-  // Initialize Brush
   brush = new Brush(photoW, photoH, maxBrushCount);
 
-  // Initialize RainEffect
   rainEffect = new RainEffect(photoW, photoH);
 
-  // Add oil painting canvas texture using Perlin noise to the graphics buffer
   pg.noiseDetail(4, 0.5);
   for (let x = 0; x < photoW; x++) {
     for (let y = 0; y < photoH; y++) {
@@ -296,29 +279,68 @@ function reset() {
   textFont('Georgia');
   textStyle(ITALIC);
 
-  loop(); // Restart draw loop
+  loop();
 }
 
 function mouseClicked() {
-  // Check if click is within Polaroid area
   if (
     mouseX >= photoX &&
     mouseX <= photoX + photoW &&
     mouseY >= photoY &&
     mouseY <= photoY + photoH
   ) {
-    reset(); // Regenerate new image
+    reset();
+  }
+}
+
+// Function to upload image to GitHub
+async function uploadToGitHub(base64Data, fileName) {
+  const token = "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"; // Replace with your GitHub Personal Access Token
+  const repo = "WNSAKW/Polaroids"; // Replace with your repository
+  const path = `images/${fileName}`; // Path in repo (e.g., images/myCanvas.png)
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+
+  // Extract Base64 data (remove data:image/png;base64, prefix)
+  const base64Content = base64Data.split(',')[1];
+
+  const data = {
+    message: `Add ${fileName} via API`,
+    content: base64Content,
+    branch: "main"
+  };
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      const json = await response.json();
+      console.log('Image uploaded successfully:', json.content.download_url);
+      return json.content.download_url; // Returns the raw URL of the uploaded image
+    } else {
+      const error = await response.json();
+      console.error('Upload failed:', error);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error uploading to GitHub:', error);
+    return null;
   }
 }
 
 function draw() {
   if (brush.isFinished()) {
-    // Draw rain effect before applying filter
     if (!rainEffect.drawn) {
       rainEffect.draw(pg);
       rainEffect.drawn = true;
     } else {
-      // Apply selected filter to the graphics buffer
       if (selectedFilter.type) {
         if (selectedFilter.param) {
           pg.filter(selectedFilter.type, selectedFilter.param);
@@ -327,28 +349,28 @@ function draw() {
         }
       }
 
-      // Draw the filtered graphics buffer onto the main canvas
       image(pg, photoX, photoY);
-
-      // Draw sign.png centered on the canvas
       image(signImg, 0, 0, canvasW, canvasH);
-
-      // Display text using PolaroidText
       polaroidText.display();
 
-      // Save the canvas as a PNG
-      //saveCanvas(`#${nf(saveCount, 5)}.png`);
-      //saveCount++; // Increment for unique filenames
+      // Save canvas as Base64 and upload to GitHub
+      let imgData = canvas.toDataURL('image/png');
+      let timestamp = Date.now();
+      let fileName = `polaroid_${timestamp}.png`;
+      uploadToGitHub(imgData, fileName).then(url => {
+        if (url) {
+          console.log(`Image available at: ${url}`);
+          // Optionally display the URL or use it in Google Sites
+        }
+      });
 
-      noLoop(); // Stop drawing until next reset
+      noLoop();
       return;
     }
   } else {
-    // Draw brush stroke and update position
     brush.drawStroke(pg, theme);
     brush.update();
   }
 
-  // Continuously draw the graphics buffer to the main canvas during painting
   image(pg, photoX, photoY);
 }
