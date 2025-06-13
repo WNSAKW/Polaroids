@@ -15,6 +15,7 @@ let selectedFilter;
 let signImg;
 let pg; // Graphics buffer for the drawing area
 let polaroidText; // PolaroidText instance
+let saveButton; // Save button
 
 // Brush class definition
 class Brush {
@@ -92,8 +93,8 @@ class Theme {
       new Theme("Sunset", color(255, 100, 50), color(255, 200, 150), color(255, 180, 100), color(70, 130, 180), color(30, 90, 160)),
       new Theme("Spring", color(255, 220, 250), color(255, 255, 255), color(255, 200, 230), color(150, 230, 150), color(100, 200, 100)),
       new Theme("Winter", color(180, 220, 255), color(255, 240, 250), color(255, 250, 255), color(240, 240, 255), color(220, 220, 240)),
-      new Theme("FoggyForest", color(200, 220, 220), color(230, 240, 240), color(180, 200, 190), color(90, 110, 90), color(50, 70, 60)),
-      new Theme("Forest", color(180, 220, 200), color(210, 240, 230), color(140, 180, 120), color(60, 100, 60), color(30, 70, 30)),
+      new Theme("FoggyForest", color(200, 220, 220), color(230, 240, 240), color(180, 200, 60)), color(90, 110, 90), color(50, 180, 60)),
+      new Theme("Forest", color(180, 220, 200), color(210, 240, 230), color(140, 180, 30), color(60, 100, 60), color(30, 70, 30)),
       new Theme("Lakeside", color(170, 220, 255), color(240, 255, 255), color(180, 230, 250), color(100, 180, 200), color(50, 130, 160)),
       new Theme("SunriseDew", color(255, 182, 193), color(255, 228, 181), color(240, 230, 140), color(34, 139, 34), color(0, 100, 0)),
       new Theme("Overcast", color(150, 150, 170), color(200, 200, 210), color(180, 180, 190), color(80, 100, 80), color(50, 70, 50)),
@@ -126,7 +127,7 @@ class Filter {
       new Filter("Blur6", BLUR, 6), //模糊6
       new Filter("Grayscale", GRAY), //灰階
       new Filter("Invert", INVERT), //顏色反轉
-			new Filter("Posterize2", POSTERIZE, 2), //色調分離2
+      new Filter("Posterize2", POSTERIZE, 2), //色調分離2
       new Filter("Posterize4", POSTERIZE, 4), //色調分離4
       new Filter("Threshold", THRESHOLD) //黑白
     ];
@@ -248,11 +249,18 @@ class PolaroidText {
 
 function preload() {
   bg = loadImage("canvas.png");
-	signImg = loadImage("sign.png");
+  signImg = loadImage("sign.png");
 }
 
 function setup() {
   createCanvas(canvasW, canvasH);
+  // Create save button
+  saveButton = createButton('Save Image');
+  saveButton.position(canvasW / 2 - 50, canvasH + 10); // Centered below canvas
+  saveButton.mousePressed(saveCanvasImage);
+  saveButton.style('font-size', '16px');
+  saveButton.style('padding', '5px 15px');
+  saveButton.hide(); // Hide button initially
   reset(); // Initialize everything
 }
 
@@ -295,7 +303,14 @@ function reset() {
   textFont('Georgia');
   textStyle(ITALIC);
 
+  saveButton.hide(); // Hide save button until image is generated
   loop(); // Restart draw loop
+}
+
+function saveCanvasImage() {
+  // Save the entire canvas with a timestamped filename
+  let timestamp = nf(year(), 4) + nf(month(), 2) + nf(day(), 2) + '_' + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2);
+  saveCanvas(`polaroid_${timestamp}`, 'png');
 }
 
 function mouseClicked() {
@@ -334,6 +349,9 @@ function draw() {
 
       // Display text using PolaroidText
       polaroidText.display();
+
+      // Show save button when image is fully generated
+      saveButton.show();
 
       noLoop(); // Stop drawing until next reset
       return;
