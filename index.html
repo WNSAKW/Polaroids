@@ -1,48 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Polaroid Art Generator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Polaroids</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.7/lib/p5.js"></script>
+  <script src="Main.js" type="text/javascript"></script>
   <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+    html, body {
       margin: 0;
-      background-color: #f0f0f0;
-      font-family: 'Georgia', serif;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #000000; /* 可自訂背景色 */
     }
     canvas {
-      border: 1px solid #ccc;
-    }
-    #saveButton {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      font-family: 'Georgia', serif;
-      font-style: italic;
-      color: #333;
-      background-color: #fff;
-      border: 2px solid #999;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    #saveButton:hover {
-      background-color: #e0e0e0;
-    }
-    #saveButton:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
+      max-width: 100%;
+      height: auto;
     }
   </style>
 </head>
 <body>
-  <script src="Main.js"></script>
-  <button id="saveButton" onclick="savePolaroid()" disabled>Save</button>
 </body>
 </html>
