@@ -15,7 +15,6 @@ let selectedFilter;
 let signImg;
 let pg; // Graphics buffer for the drawing area
 let polaroidText; // PolaroidText instance
-let saveButton; // Save button
 
 // Brush class definition
 class Brush {
@@ -42,7 +41,7 @@ class Brush {
     } else if (y < this.photoH * 0.5) {
       col = theme.horizon;
     } else {
-      col = pg.lerpColor(theme.groundStart, groundEnd, (lerpAmt - 0.5) * 2);
+      col = pg.lerpColor(theme.groundStart, theme.groundEnd, (lerpAmt - 0.5) * 2);
     }
 
     let alpha = random(50, 100);
@@ -127,7 +126,7 @@ class Filter {
       new Filter("Blur6", BLUR, 6), //模糊6
       new Filter("Grayscale", GRAY), //灰階
       new Filter("Invert", INVERT), //顏色反轉
-      new Filter("Posterize2", POSTERIZE, 2), //色調分離2
+			new Filter("Posterize2", POSTERIZE, 2), //色調分離2
       new Filter("Posterize4", POSTERIZE, 4), //色調分離4
       new Filter("Threshold", THRESHOLD) //黑白
     ];
@@ -249,18 +248,11 @@ class PolaroidText {
 
 function preload() {
   bg = loadImage("canvas.png");
-  signImg = loadImage("sign.png");
+	signImg = loadImage("sign.png");
 }
 
 function setup() {
   createCanvas(canvasW, canvasH);
-  // Create save button
-  saveButton = createButton('Save Image');
-  saveButton.position(canvasW / 2 - 50, canvasH + 10); // Centered below canvas
-  saveButton.mousePressed(saveCanvasImage);
-  saveButton.style('font-size', '16px');
-  saveButton.style('padding', '5px 15px');
-  saveButton.hide(); // Hide button initially
   reset(); // Initialize everything
 }
 
@@ -303,14 +295,7 @@ function reset() {
   textFont('Georgia');
   textStyle(ITALIC);
 
-  saveButton.hide(); // Hide save button until image is generated
   loop(); // Restart draw loop
-}
-
-function saveCanvasImage() {
-  // Save the entire canvas with a timestamped filename
-  let timestamp = nf(year(), 4) + nf(month(), 2) + nf(day(), 2) + '_' + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2);
-  saveCanvas(`polaroid_${timestamp}`, 'png');
 }
 
 function mouseClicked() {
@@ -349,9 +334,6 @@ function draw() {
 
       // Display text using PolaroidText
       polaroidText.display();
-
-      // Show save button when image is fully generated
-      saveButton.show();
 
       noLoop(); // Stop drawing until next reset
       return;
