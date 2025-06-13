@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Polaroid Image Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polaroid Art Generator</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-  <script src="Main.js"></script>
   <style>
     body {
       display: flex;
@@ -14,15 +14,20 @@
       height: 100vh;
       margin: 0;
       background-color: #f0f0f0;
+      font-family: 'Georgia', serif;
+    }
+    canvas {
+      border: 1px solid #ccc;
     }
     #saveButton {
-      margin-top: 20px;
+      margin-top: 10px;
       padding: 10px 20px;
       font-size: 16px;
       font-family: 'Georgia', serif;
       font-style: italic;
-      background-color: #ffffff;
-      border: 2px solid #333;
+      color: #333;
+      background-color: #fff;
+      border: 2px solid #999;
       border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.3s;
@@ -33,6 +38,7 @@
   </style>
 </head>
 <body>
-  <button id="saveButton" onclick="saveImage()">Save</button>
+  <script src="Main.js"></script>
+  <button id="saveButton" onclick="savePolaroid()">Save</button>
 </body>
 </html>
