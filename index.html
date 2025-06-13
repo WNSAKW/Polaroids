@@ -35,10 +35,14 @@
     #saveButton:hover {
       background-color: #e0e0e0;
     }
+    #saveButton:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
   <script src="Main.js"></script>
-  <button id="saveButton" onclick="savePolaroid()">Save</button>
+  <button id="saveButton" onclick="savePolaroid()" disabled>Save</button>
 </body>
 </html>
