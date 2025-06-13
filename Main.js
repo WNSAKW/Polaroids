@@ -27,7 +27,6 @@ class Brush {
     this.brushDir = createVector(random([-1, 1]) * random(3, 6), 0); // Horizontal movement only
   }
 
-  // Draw a single brush stroke on the graphics buffer
   drawStroke(pg, theme) {
     if (this.brushCount > this.maxBrushCount) return false;
 
@@ -54,11 +53,9 @@ class Brush {
     return true;
   }
 
-  // Update brush position
   update() {
     this.brushPos.add(this.brushDir);
 
-    // Reset position if outside photo area
     if (
       this.brushPos.x < 0 || this.brushPos.x > this.photoW ||
       this.brushPos.y < 0 || this.brushPos.y > this.photoH
@@ -69,7 +66,6 @@ class Brush {
     }
   }
 
-  // Check if brush has reached max count
   isFinished() {
     return this.brushCount > this.maxBrushCount;
   }
@@ -118,7 +114,6 @@ class Filter {
     this.param = param;
   }
 
-  // Static method to get all predefined filters
   static getAllFilters() {
     return [
       new Filter("None", null),
@@ -295,18 +290,37 @@ function mouseClicked() {
 
 // Function to upload image to GitHub
 async function uploadToGitHub(base64Data, fileName) {
-  const token = "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"; // Replace with your GitHub Personal Access Token
-  const repo = "WNSAKW/Polaroids"; // Replace with your repository
-  const path = `images/${fileName}`; // Path in repo (e.g., images/myCanvas.png)
+  const token = "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";
+  const repo = "WNSAKW/Polaroids";
+  const path = `images/${fileName}`;
   const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
-
-  // Extract Base64 data (remove data:image/png;base64, prefix)
   const base64Content = base64Data.split(',')[1];
+
+  // Check if file exists to get SHA (for overwriting)
+  let sha = null;
+  try {
+    const getResponse = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    if (getResponse.ok) {
+      const getJson = await getResponse.json();
+      sha = getJson.sha;
+      console.log('Existing file SHA:', sha);
+    } else {
+      console.log('File does not exist, creating new file.');
+    }
+  } catch (e) {
+    console.error('Error checking file existence:', e.message);
+  }
 
   const data = {
     message: `Add ${fileName} via API`,
     content: base64Content,
-    branch: "main"
+    branch: "main",
+    sha: sha // Include SHA if updating existing file
   };
 
   try {
@@ -322,17 +336,27 @@ async function uploadToGitHub(base64Data, fileName) {
 
     if (response.ok) {
       const json = await response.json();
-      console.log('Image uploaded successfully:', json.content.download_url);
-      return json.content.download_url; // Returns the raw URL of the uploaded image
+      const downloadUrl = `https://raw.githubusercontent.com/${repo}/main/${path}`;
+      console.log('Image uploaded successfully:', downloadUrl);
+      return downloadUrl;
     } else {
       const error = await response.json();
-      console.error('Upload failed:', error);
+      console.error('Upload failed:', error.message, 'Status:', response.status);
       return null;
     }
   } catch (error) {
-    console.error('Error uploading to GitHub:', error);
+    console.error('Error uploading to GitHub:', error.message);
     return null;
   }
+}
+
+// Fallback to download image locally
+function downloadImage(base64Data, fileName) {
+  console.log('Downloading image locally:', fileName);
+  const link = document.createElement('a');
+  link.href = base64Data;
+  link.download = fileName;
+  link.click();
 }
 
 function draw() {
@@ -357,10 +381,18 @@ function draw() {
       let imgData = canvas.toDataURL('image/png');
       let timestamp = Date.now();
       let fileName = `polaroid_${timestamp}.png`;
+      // let fileName = `latest_polaroid.png`; // Uncomment for fixed filename
       uploadToGitHub(imgData, fileName).then(url => {
         if (url) {
           console.log(`Image available at: ${url}`);
-          // Optionally display the URL or use it in Google Sites
+          // Display URL on canvas for easy copying
+          fill(255);
+          textSize(12);
+          textAlign(LEFT, TOP);
+          text(url, 10, 10);
+        } else {
+          console.log('Falling back to local download due to upload failure.');
+          downloadImage(imgData, fileName);
         }
       });
 
