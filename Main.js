@@ -63,7 +63,7 @@ class Brush {
       this.brushPos.x < 0 || this.brushPos.x > this.photoW ||
       this.brushPos.y < 0 || this.brushPos.y > this.photoH
     ) {
-      this.brushPos = createVector(random(0, this.photoW), random(0, photoH));
+      this.brushPos = createVector(random(0, this.photoW), random(0, this.photoH));
       let direction = random([-1, 1]);
       this.brushDir = createVector(direction * random(3, 6), 0);
     }
@@ -126,7 +126,7 @@ class Filter {
       new Filter("Blur6", BLUR, 6), //模糊6
       new Filter("Grayscale", GRAY), //灰階
       new Filter("Invert", INVERT), //顏色反轉
-      new Filter("Posterize2", POSTERIZE, 2), //色調分離2
+			new Filter("Posterize2", POSTERIZE, 2), //色調分離2
       new Filter("Posterize4", POSTERIZE, 4), //色調分離4
       new Filter("Threshold", THRESHOLD) //黑白
     ];
@@ -248,7 +248,7 @@ class PolaroidText {
 
 function preload() {
   bg = loadImage("canvas.png");
-  signImg = loadImage("sign.png");
+	signImg = loadImage("sign.png");
 }
 
 function setup() {
@@ -310,36 +310,6 @@ function mouseClicked() {
   }
 }
 
-// Function to upload image to freeimage.host
-async function uploadToFreeImageHost(imageData) {
-  const apiKey = '6d207e02198a847aa98d0a2a901485a5'; // Replace with your freeimage.host API key
-  const url = 'https://freeimage.host/api/1/upload';
-
-  // Prepare form data
-  const formData = new FormData();
-  formData.append('key', apiKey);
-  formData.append('image', imageData.split(',')[1]); // Remove 'data:image/png;base64,' prefix
-  formData.append('format', 'json');
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData
-    });
-    const result = await response.json();
-    if (result.status_code === 200) {
-      console.log('Image uploaded successfully! URL:', result.image.url);
-      return result.image.url;
-    } else {
-      console.error('Upload failed:', result.status_txt);
-      return null;
-    }
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    return null;
-  }
-}
-
 function draw() {
   if (brush.isFinished()) {
     // Draw rain effect before applying filter
@@ -364,10 +334,6 @@ function draw() {
 
       // Display text using PolaroidText
       polaroidText.display();
-
-      // Upload the canvas to freeimage.host
-      let imageData = canvas.toDataURL('image/png');
-      uploadToFreeImageHost(imageData);
 
       noLoop(); // Stop drawing until next reset
       return;
