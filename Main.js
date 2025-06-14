@@ -15,6 +15,9 @@ let selectedFilter;
 let signImg;
 let pg; // Graphics buffer for the drawing area
 let polaroidText; // PolaroidText instance
+let imageUploaded = false; // Flag to prevent multiple uploads
+let imageCounter = 1; // Counter for image naming (#00001, #00002, etc.)
+const IMGBB_API_KEY = '50dbfa39c91a5413af7b201f63f30498'; // Replace with your ImgBB API key
 
 // Brush class definition
 class Brush {
@@ -126,7 +129,7 @@ class Filter {
       new Filter("Blur6", BLUR, 6), //模糊6
       new Filter("Grayscale", GRAY), //灰階
       new Filter("Invert", INVERT), //顏色反轉
-			new Filter("Posterize2", POSTERIZE, 2), //色調分離2
+      new Filter("Posterize2", POSTERIZE, 2), //色調分離2
       new Filter("Posterize4", POSTERIZE, 4), //色調分離4
       new Filter("Threshold", THRESHOLD) //黑白
     ];
@@ -246,9 +249,47 @@ class PolaroidText {
   }
 }
 
+// Function to upload image to ImgBB
+async function uploadToImgBB() {
+  try {
+    // Get the canvas as a base64 data URL
+    let dataURL = canvas.toDataURL('image/png');
+    // Remove the data URI prefix
+    let base64Image = dataURL.split(',')[1];
+
+    // Generate image name in format #00001, #00002, etc.
+    let imageName = `#${nf(imageCounter, 5)}`; // nf ensures 5 digits (e.g., 00001)
+    imageCounter++; // Increment for next image
+
+    // Prepare form data for ImgBB API
+    let formData = new FormData();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', base64Image);
+    formData.append('name', imageName); // Set custom image name
+
+    // Make POST request to ImgBB
+    let response = await fetch('https://api.imgbb.com/1/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    let result = await response.json();
+    if (result.success) {
+      console.log(`Image uploaded successfully as ${imageName}:`, result.data.url);
+      return result.data.url;
+    } else {
+      console.error('ImgBB upload failed:', result.error.message);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error uploading to ImgBB:', error);
+    return null;
+  }
+}
+
 function preload() {
   bg = loadImage("canvas.png");
-	signImg = loadImage("sign.png");
+  signImg = loadImage("sign.png");
 }
 
 function setup() {
@@ -258,6 +299,7 @@ function setup() {
 
 function reset() {
   pg = createGraphics(photoW, photoH); // Recreate graphics buffer
+  imageUploaded = false; // Reset upload flag
 
   // Initialize themes and filters
   themes = Theme.getAllThemes();
@@ -334,6 +376,12 @@ function draw() {
 
       // Display text using PolaroidText
       polaroidText.display();
+
+      // Upload image to ImgBB if not already uploaded
+      if (!imageUploaded) {
+        uploadToImgBB();
+        imageUploaded = true;
+      }
 
       noLoop(); // Stop drawing until next reset
       return;
