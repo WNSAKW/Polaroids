@@ -16,7 +16,7 @@ let signImg;
 let pg; // Graphics buffer for the drawing area
 let polaroidText; // PolaroidText instance
 let imageUploaded = false; // Flag to prevent multiple uploads
-let imageCounter = 1; // Counter for image naming (#00001, #00002, etc.)
+let imageCounter = parseInt(localStorage.getItem('imageCounter')) || 1; // Counter for image naming (#00001, #00002, etc.)
 const IMGBB_API_KEY = '50dbfa39c91a5413af7b201f63f30498'; // Replace with your ImgBB API key
 
 // Brush class definition
@@ -66,7 +66,7 @@ class Brush {
       this.brushPos.x < 0 || this.brushPos.x > this.photoW ||
       this.brushPos.y < 0 || this.brushPos.y > this.photoH
     ) {
-      this.brushPos = createVector(random(0, this.photoW), random(0, this.photoH));
+      this.brushPos = createVector(random(0, this.photoW), random(0, photoH));
       let direction = random([-1, 1]);
       this.brushDir = createVector(direction * random(3, 6), 0);
     }
@@ -249,40 +249,40 @@ class PolaroidText {
   }
 }
 
-// Function to upload image to ImgBB
+// Function to upload image to ImgBB and save URL to Google Sheets
 async function uploadToImgBB() {
   try {
-    // Get the canvas as a base64 data URL
     let dataURL = canvas.toDataURL('image/png');
-    // Remove the data URI prefix
     let base64Image = dataURL.split(',')[1];
-
-    // Generate image name in format #00001, #00002, etc.
-    let imageName = `#${nf(imageCounter, 5)}`; // nf ensures 5 digits (e.g., 00001)
-    imageCounter++; // Increment for next image
-
-    // Prepare form data for ImgBB API
+    let imageName = `#${nf(imageCounter, 5)}`;
+    imageCounter++;
+    localStorage.setItem('imageCounter', imageCounter); // Persist counter
     let formData = new FormData();
     formData.append('key', IMGBB_API_KEY);
     formData.append('image', base64Image);
-    formData.append('name', imageName); // Set custom image name
-
-    // Make POST request to ImgBB
+    formData.append('name', imageName);
     let response = await fetch('https://api.imgbb.com/1/upload', {
       method: 'POST',
       body: formData
     });
-
     let result = await response.json();
     if (result.success) {
       console.log(`Image uploaded successfully as ${imageName}:`, result.data.url);
+      // Save to Google Sheets
+      let sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbxCAK1NXKfc-T3kdLB7ayEDlq8_IEq9_UrabXdrv9c3rfG3KrOjxqF_tctkv2It9nL0pA/exec', {
+        method: 'POST',
+        mode: 'no-cors', // Avoid CORS issues
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: imageName, url: result.data.url })
+      });
+      console.log(`Google Sheets response status: ${sheetsResponse.status}`);
       return result.data.url;
     } else {
       console.error('ImgBB upload failed:', result.error.message);
       return null;
     }
   } catch (error) {
-    console.error('Error uploading to ImgBB:', error);
+    console.error('Error uploading to ImgBB or saving to Google Sheets:', error);
     return null;
   }
 }
